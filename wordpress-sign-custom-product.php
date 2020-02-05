@@ -4,7 +4,7 @@
  */
 /*
   Plugin Name: Gravure Produits
-  Plugin URI: https://www.vendmy.com
+  Plugin URI: https://www.arsgroupe.com
   Description: Permettre au client de graver des textes et images sur les produits
   Version: 1.0
   Author: ARS GROUP
