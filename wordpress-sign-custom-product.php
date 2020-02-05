@@ -32,9 +32,27 @@ class SignCustomProduct {
 		add_action('wp_head', array($this, 'loadFonts') );
 		add_action('admin_menu', array( &$this , 'register_metabox'));
        	add_action('save_post',  array(&$this, 'misha_save'), 1, 2 );
-
+		add_action('manage_product_posts_custom_column', array(&$this, 'booked_add_custom_product_columns'), 15, 3);
+		add_filter('manage_product_posts_columns', array(&$this, 'booked_add_product_columns'), 15, 1);
     }   
+    function booked_add_custom_product_columns($column_name, $postid){
+		if ( $column_name == $this->meta_key_img ) {
+		 	$name = get_post_meta($postid, $this->meta_key_img,  false )[0];
+			if($name){
+				echo "<img style='width: 25px' src='https://img.icons8.com/plasticine/50/000000/double-tick.png'>";
+			}else{
 
+				echo "<img style='width: 25px' src='https://img.icons8.com/color/48/000000/close-window.png'>";
+			}		
+
+		}
+
+    }
+    function booked_add_product_columns($defaults ){
+
+			$defaults[$this->meta_key_img] = esc_html__('Gravable', 'booked');
+			return $defaults;
+    }
     /*
      * INit LINKS
      */
@@ -173,6 +191,10 @@ class SignCustomProduct {
 	 */
 	public function content_before_add_tocart_button() {
 
+		global $post;
+		$url = get_post_meta($post->ID, $this->meta_key_img,  false )[0];
+		if(!$url)
+			return;
 		$template = '
 		
 			<style>
@@ -207,7 +229,7 @@ class SignCustomProduct {
 					<h3>Gravure</h3>
 				</div>
 				<div class="engraving-image">
-					<img src="//cdn.shopify.com/s/files/1/1438/8986/products/Antique-Silver-Blazer-Button_360x.png?v=1533723835" alt="produit"/>
+					<img src="'.$url.'" alt="produit"/>
 					<div class="engraving-text-container">
 						<span id="engraving-text"></span>
 					</div>
