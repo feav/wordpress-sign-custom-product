@@ -1,14 +1,14 @@
 <?php
 /**
- * @package EnablonCommunity
+ * @package WPSCP
  */
 /*
-  Plugin Name: Vendmy Bon de Visite API
+  Plugin Name: Gravure Produits
   Plugin URI: https://www.vendmy.com
-  Description: Integration des DE BON DE PRIX API
+  Description: Permettre au client de graver des textes et images sur les produits
   Version: 1.0
-  Author: Vendmy
-  Author URI: http://Vendmy.com
+  Author: ARS GROUP
+  Author URI: http://www.arsgroupe.cm
  */
 
 define('WPSCP_PLUGIN_FILE',__FILE__);
