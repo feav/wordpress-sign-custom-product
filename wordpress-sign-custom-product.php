@@ -27,6 +27,8 @@ class SignCustomProduct {
 		add_filter( 'woocommerce_add_cart_item_data', array($this, 'add_cart_item_data'), 25, 2 );
 		add_filter( 'woocommerce_get_item_data', array($this, 'get_item_data') , 25, 2 );
 		add_action( 'woocommerce_add_order_item_meta', array($this, 'add_order_item_meta') , 10, 2 );
+		
+		add_action('wp_head', array($this, 'loadFonts') );
 
     }   
 
@@ -44,6 +46,30 @@ class SignCustomProduct {
 	public function content_before_add_tocart_button() {
 
 		$template = '
+		
+			<style>
+				.engraving-image {
+					position: relative;
+				}
+				
+				.engraving-text-container {
+					position: absolute;
+					top: 0;
+					width: 100%;
+					height: 100%;
+					z-index: 1;
+					text-align: center;
+				}
+				
+				#engraving-text {
+					display: block;
+					position: relative;
+					top: 50%;
+					transform: translateY(-50%);
+					font-size: 1.2em;
+				}
+			
+			</style>
 
 			<div class="engraving-selector-container">
 				<select id="engraving-selector" name="customer_engraving">
@@ -57,6 +83,9 @@ class SignCustomProduct {
 				</div>
 				<div class="engraving-image">
 					<img src="//cdn.shopify.com/s/files/1/1438/8986/products/Antique-Silver-Blazer-Button_360x.png?v=1533723835" alt="produit"/>
+					<div class="engraving-text-container">
+						<span id="engraving-text"></span>
+					</div>
 				</div>
 				<div class="engraving-options">
 					<div class="engraving-option">
@@ -65,10 +94,14 @@ class SignCustomProduct {
 					</div>
 					<div class="engraving-option">
 						<label for="customer_engraving_font">Police</label>
-						<select id="customer_engraving_font" name="customer_engraving_font">
-							<option>Romain</option>
-							<option>Poppins</option>
-							<option>Script</option>
+						<select id="customer_engraving_font" name="customer_engraving_font">';
+						
+						$fonts = $this->getFonts();
+						
+						foreach($fonts as $key => $value){
+							$template .= '<option value="'. $key .'">' . $value . '</option>';
+						}
+						$template .= '
 						</select>
 					</div>	
 				</div>
@@ -92,6 +125,24 @@ class SignCustomProduct {
 					});
 					
 				});
+				
+				// TODO one why data binding
+				jQuery("#customer_engraving_text").keyup((event)=>{
+						jQuery("#engraving-text").text(jQuery("#customer_engraving_text").val()); 
+				});
+				
+				jQuery("#customer_engraving_font").change(event=> {
+					let fontElt = jQuery("#customer_engraving_font");
+					console.log(fontElt.val());
+					if(fontElt.val() == "dancing"){
+						jQuery("#engraving-text").css("font-family", "Dancing Script")
+					}else if (fontElt.val() == "lobster") {
+						jQuery("#engraving-text").css("font-family", "Lobster Two")
+					}else if (fontElt.val() == "jim") {
+						jQuery("#engraving-text").css("font-family", "Jim Nightshade")
+					}
+				});
+				
 				
 			</script>
 
@@ -157,6 +208,27 @@ class SignCustomProduct {
         }
         return $inst;
     }
+	
+	// Loading Fonts
+	public function loadFonts() {
+		?>
+			<link href="https://fonts.googleapis.com/css?family=Dancing+Script&display=swap" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/css?family=Lobster+Two&display=swap" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/css?family=Jim+Nightshade&display=swap" rel="stylesheet">
+		<?php
+
+	}
+	
+	// Static fonts key and value
+	public function getFonts() {
+		$fonts = array
+		(
+			'dancing' =>'Dancing Script', 
+			'lobster' => 'Lobster Two',
+			'jim' => 'Jim Nightshade'
+		);
+		return $fonts;
+	}
 
 }
 
