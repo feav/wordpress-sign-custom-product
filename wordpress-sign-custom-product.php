@@ -359,11 +359,13 @@
 						
 						let fontElt = jQuery("#customer_engraving_font");
 						if(fontElt.val() == "dancing"){
-							jQuery("#engraving-text").css("font-family", "Dancing Script")
+							jQuery("#engraving-text").css("font-family", "Dancing Script");
 						}else if (fontElt.val() == "lobster") {
-							jQuery("#engraving-text").css("font-family", "Lobster Two")
+							jQuery("#engraving-text").css("font-family", "Lobster Two");
 						}else if (fontElt.val() == "jim") {
-							jQuery("#engraving-text").css("font-family", "Jim Nightshade")
+							jQuery("#engraving-text").css("font-family", "Jim Nightshade");
+						}else if (fontElt.val() == "comic_sans_ms") {
+							jQuery("#engraving-text").css("font-family", "Comic Sans MS");
 						}
 					}
 					
@@ -385,11 +387,20 @@
 				if($_POST ['customer_engraving'] == 'yes') {
 
 					$custom_data  = array() ;
+
 					$custom_data [ 'customer_engraving_text' ]    = isset( $_POST ['customer_engraving_text'] ) ?  sanitize_text_field ( $_POST ['customer_engraving_text'] ) : "" ;
+
 					$custom_data [ 'customer_engraving_font' ] = isset( $_POST ['customer_engraving_font'] ) ? sanitize_text_field ( $_POST ['customer_engraving_font'] ): "" ;
+
+					if(isset( $_POST ['variation_id'])){
+						$custom_data ['customer_variation_id'] = $_POST ['variation_id'];
+					}
+
 					$cart_item_meta ['customer_engraving']     = $custom_data ;
 
 					$cart_item_meta ['customer_engraving_product_id']     = $_POST ["add-to-cart"] ;
+
+					
 
 				}
 			}
@@ -403,13 +414,28 @@
 		public function get_item_data ( $other_data, $cart_item ) {
 
 			if ( isset( $cart_item [ 'customer_engraving' ] ) &&  $cart_item['data']->name=="Service Gravure") {
+				
 				$custom_data  = $cart_item [ 'customer_engraving' ];
-					
-				$other_data[] = array( 'name' => 'Produit', 'display'  => get_the_title( $cart_item['customer_engraving_product_id'] )  );
-				$other_data[] = array( 'name' => 'Text',
-							'display'  => $custom_data['customer_engraving_text'] );
-				$other_data[] = array( 'name' => 'Police',
-							   'display'  => $custom_data['customer_engraving_font'] );
+				
+				$variationName = '';
+				$productName = '';
+
+				if(!empty($custom_data['customer_variation_id'])){
+					$variation_id = $custom_data['customer_variation_id'];
+					$variation = new WC_Product_Variation($variation_id);
+					$variationName = implode(" / ", $variation->get_variation_attributes());
+				}
+
+				if($variationName == ''){
+					$productName = get_the_title( $cart_item['customer_engraving_product_id'] );
+				}else{
+					$productName = get_the_title( $cart_item['customer_engraving_product_id'] ) . ' - ' . $variationName ;
+				}
+
+				$other_data[] = array( 'name' => 'Produit', 'display'  => $productName  );
+				$other_data[] = array( 'name' => 'Text', 'display'  => $custom_data['customer_engraving_text'] );
+				$other_data[] = array( 'name' => 'Police', 'display'  => $custom_data['customer_engraving_font'] );
+
 			}
 
 			return $other_data;
@@ -421,12 +447,28 @@
 		 */
 		public function add_order_item_meta ( $item_id, $values ) {
 
-			if ( isset( $values [ 'customer_engraving' ] ) &&  $values['data']->name=="Service Gravure" ) {
-				$custom_data  = $values [ 'customer_engraving' ];
-				$other_data[] = array( 'name' => 'Service', 'display'  =>  'Gravure');
-				wc_add_order_item_meta( $item_id, 'Produit',  get_the_title( $values['customer_engraving_product_id'] ));
-				wc_add_order_item_meta( $item_id, 'Text', $custom_data['customer_engraving_text'] );
-				wc_add_order_item_meta( $item_id, 'Police', $custom_data['customer_engraving_font'] );
+			if ( isset( $values [ 'customer_engraving' ] ) ) {
+				
+				if($values['data']->name=="Service Gravure"){
+					$custom_data  = $values [ 'customer_engraving' ];
+					
+					$variationName = '';
+					$productName = get_the_title( $values['customer_engraving_product_id'] );
+					
+					if($custom_data['customer_variation_id']){
+						$variation_id = $custom_data['customer_variation_id'];
+						$variation = new WC_Product_Variation($variation_id);
+						$variationName = implode(",", $variation->get_variation_attributes());
+					}
+
+					if($variationName != ''){
+						$productName .= ' - ' . $variationName ;
+					}
+
+					wc_add_order_item_meta( $item_id, 'Produit',  $productName );
+					wc_add_order_item_meta( $item_id, 'Text', $custom_data['customer_engraving_text'] );
+					wc_add_order_item_meta( $item_id, 'Police', $custom_data['customer_engraving_font'] );
+				}
 			}
 		}
 		
@@ -467,6 +509,7 @@
 		// Loading Fonts
 		public function loadFonts() {
 			?>
+			  	<link href="http://fr.allfont.net/allfont.css?fonts=comic-sans-ms" rel="stylesheet" type="text/css" />
 				<link href="https://fonts.googleapis.com/css?family=Dancing+Script&display=swap" rel="stylesheet">
 				<link href="https://fonts.googleapis.com/css?family=Lobster+Two&display=swap" rel="stylesheet">
 				<link href="https://fonts.googleapis.com/css?family=Jim+Nightshade&display=swap" rel="stylesheet">
@@ -478,7 +521,7 @@
 		public function getFonts() {
 			$fonts = array
 			(
-				'comic_sans_ms' =>'Comic sans MS', 
+				'comic_sans_ms' =>'Comic Sans MS', 
 				'dancing' =>'Dancing Script', 
 				'lobster' => 'Lobster Two',
 				'jim' => 'Jim Nightshade'
